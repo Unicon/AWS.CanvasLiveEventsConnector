@@ -1,0 +1,201 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Metadata:
+  Generator: "former2"
+Description: ""
+Parameters:
+  Organization:
+    Type: "String"
+    Default: "unicon"
+
+  Project:
+    Type: "String"
+    Default: "devers"
+
+Resources:
+  LambdaFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Description: ""
+      FunctionName: "CanvasAppFlowLambda"
+      Handler: !Sub "net.unicon.CanvasAppFlowLambda::handleRequest"
+      Architectures:
+        - "x86_64"
+      Code:
+        S3Bucket: "canvas-integration-lambdas"
+        S3Key: "CanvasAppFlowLambda-0.0.1-SNAPSHOT.jar"
+      MemorySize: 512
+      Role: !GetAtt IAMRole.Arn
+      Runtime: "java8"
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+      Timeout: 900
+      TracingConfig:
+        Mode: "PassThrough"
+
+  LambdaPermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !GetAtt LambdaFunction.Arn
+      Principal: "appflow.amazonaws.com"
+      SourceArn: !Sub "arn:aws:appflow:${AWS::Region}:${AWS::AccountId}:*"
+
+  S3BucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: "2008-10-17"
+        Statement:
+          -
+            Sid: "AllowAppFlowDestinationActions"
+            Effect: "Allow"
+            Principal:
+              Service: "appflow.amazonaws.com"
+            Action:
+              - "s3:PutObject"
+              - "s3:AbortMultipartUpload"
+              - "s3:ListMultipartUploadParts"
+              - "s3:ListBucketMultipartUploads"
+              - "s3:GetBucketAcl"
+              - "s3:PutObjectAcl"
+            Resource:
+              - !Sub "arn:aws:s3:::${S3Bucket}"
+              - !Sub "arn:aws:s3:::${S3Bucket}/*"
+            Condition:
+              StringEquals:
+                "aws:SourceAccount": !Ref AWS::AccountId
+
+  S3BucketPolicy2:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref S3Bucket2
+      PolicyDocument:
+        Version: "2008-10-17"
+        Statement:
+          -
+            Sid: "AllowAppFlowDestinationActions"
+            Effect: "Allow"
+            Principal:
+              Service: "appflow.amazonaws.com"
+            Action:
+              - "s3:PutObject"
+              - "s3:AbortMultipartUpload"
+              - "s3:ListMultipartUploadParts"
+              - "s3:ListBucketMultipartUploads"
+              - "s3:GetBucketAcl"
+              - "s3:PutObjectAcl"
+            Resource:
+              - !Sub "arn:aws:s3:::${S3Bucket2}"
+              - !Sub "arn:aws:s3:::${S3Bucket2}/*"
+            Condition:
+              StringEquals:
+                "aws:SourceAccount": !Ref AWS::AccountId
+
+  S3BucketPolicy3:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket: !Ref S3Bucket3
+      PolicyDocument:
+        Version: "2008-10-17"
+        Statement:
+          -
+            Sid: "AllowAppFlowDestinationActions"
+            Effect: "Allow"
+            Principal:
+              Service: "appflow.amazonaws.com"
+            Action:
+              - "s3:PutObject"
+              - "s3:AbortMultipartUpload"
+              - "s3:ListMultipartUploadParts"
+              - "s3:ListBucketMultipartUploads"
+              - "s3:GetBucketAcl"
+              - "s3:PutObjectAcl"
+            Resource:
+              - !Sub "arn:aws:s3:::${S3Bucket3}"
+              - !Sub "arn:aws:s3:::${S3Bucket3}/*"
+            Condition:
+              StringEquals:
+                "aws:SourceAccount": !Ref AWS::AccountId
+
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub "${Organization}-${Project}-canvas-assignments"
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          -
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+            BucketKeyEnabled: false
+
+  S3Bucket2:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub "${Organization}-${Project}-canvas-courses"
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          -
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+            BucketKeyEnabled: false
+
+  S3Bucket3:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub "${Organization}-${Project}-canvas-users"
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          -
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+            BucketKeyEnabled: false
+
+  IAMRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      Path: "/"
+      RoleName: "CanvasAppFlowLambdaRole"
+      AssumeRolePolicyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
+      MaxSessionDuration: 3600
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        - "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+      Description: "Allows Lambda functions to call AWS services on your behalf."
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+
