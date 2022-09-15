@@ -1,0 +1,424 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Metadata:
+  Generator: "former2"
+Description: ""
+Parameters:
+  Organization:
+    Type: "String"
+    Default: "unicon"
+
+  Project:
+    Type: "String"
+    Default: "devers"
+
+Resources:
+  GlueDatabase:
+    Type: "AWS::Glue::Database"
+    Properties:
+      DatabaseInput:
+        Name: !Sub "${Organization}-${Project}-canvas-database"
+      CatalogId: !Ref "AWS::AccountId"
+
+  GlueTable:
+    Type: "AWS::Glue::Table"
+    Properties:
+      DatabaseName: !Ref GlueDatabase
+      CatalogId: !Ref "AWS::AccountId"
+      TableInput:
+        Owner: "owner"
+        TableType: "EXTERNAL_TABLE"
+        Parameters:
+          CrawlerSchemaDeserializerVersion: "1.0"
+          CrawlerSchemaSerializerVersion: "1.0"
+          UPDATED_BY_CRAWLER: !Sub "${Organization}-${Project}-canvas-events"
+          averageRecordSize: "3493"
+          classification: "json"
+          compressionType: "none"
+          objectCount: "2"
+          recordCount: "2"
+          sizeKey: "6987"
+          typeOfData: "file"
+        StorageDescriptor:
+          Columns:
+            -
+              Name: "object.ext.asset_type"
+              Type: "string"
+            -
+              Name: "object.ext.limit_privileges_to_course_section"
+              Type: "string"
+            -
+              Name: "object.datemodified"
+              Type: "string"
+            -
+              Name: "group.type"
+              Type: "string"
+            -
+              Name: "object.ext.user_id"
+              Type: "string"
+            -
+              Name: "object.description"
+              Type: "string"
+            -
+              Name: "object.assignee.id"
+              Type: "string"
+            -
+              Name: "ext.job_id"
+              Type: "string"
+            -
+              Name: "object.assignee.ext.sis_id"
+              Type: "string"
+            -
+              Name: "group.id"
+              Type: "string"
+            -
+              Name: "object.ext.state_is_current"
+              Type: "string"
+            -
+              Name: "object.assignee.type"
+              Type: "string"
+            -
+              Name: "group.ext.context_type"
+              Type: "string"
+            -
+              Name: "ext.request_id"
+              Type: "string"
+            -
+              Name: "object.datecreated"
+              Type: "string"
+            -
+              Name: "object.ext.workflow_state"
+              Type: "string"
+            -
+              Name: "object.ext.course_id"
+              Type: "string"
+            -
+              Name: "object.assignable.type"
+              Type: "string"
+            -
+              Name: "generated.ext.entity_id"
+              Type: "string"
+            -
+              Name: "object.name"
+              Type: "string"
+            -
+              Name: "ext.job_tag"
+              Type: "string"
+            -
+              Name: "referrer"
+              Type: "string"
+            -
+              Name: "generated.attempt.assignable.id"
+              Type: "string"
+            -
+              Name: "object.type"
+              Type: "string"
+            -
+              Name: "object.ext.redirect_url"
+              Type: "string"
+            -
+              Name: "object.ext.submission_type"
+              Type: "string"
+            -
+              Name: "edapp.type"
+              Type: "string"
+            -
+              Name: "object.ext.domain"
+              Type: "string"
+            -
+              Name: "type"
+              Type: "string"
+            -
+              Name: "generated.id"
+              Type: "string"
+            -
+              Name: "actor.id"
+              Type: "string"
+            -
+              Name: "membership.organization.id"
+              Type: "string"
+            -
+              Name: "ext.hostname"
+              Type: "string"
+            -
+              Name: "object.maxscore.numberstr"
+              Type: "string"
+            -
+              Name: "session.id"
+              Type: "string"
+            -
+              Name: "generated.scoregiven"
+              Type: "string"
+            -
+              Name: "actor.ext.root_account_lti_guid"
+              Type: "string"
+            -
+              Name: "generated.scoregiven.numberstr"
+              Type: "string"
+            -
+              Name: "generated.attempt.assignable.type"
+              Type: "string"
+            -
+              Name: "object.ext.course_section_id"
+              Type: "string"
+            -
+              Name: "sendtime"
+              Type: "string"
+            -
+              Name: "actor.type"
+              Type: "string"
+            -
+              Name: "object.ext.url"
+              Type: "string"
+            -
+              Name: "membership.roles"
+              Type: "string"
+            -
+              Name: "object.ext.grade"
+              Type: "string"
+            -
+              Name: "actor.ext.user_login"
+              Type: "string"
+            -
+              Name: "object.ext.asset_name"
+              Type: "string"
+            -
+              Name: "object.ext.context_account_id"
+              Type: "string"
+            -
+              Name: "@context"
+              Type: "string"
+            -
+              Name: "object.ext.filename"
+              Type: "string"
+            -
+              Name: "sensor"
+              Type: "string"
+            -
+              Name: "generated.attempt.assignee.id"
+              Type: "string"
+            -
+              Name: "membership.member.type"
+              Type: "string"
+            -
+              Name: "object.assignable.id"
+              Type: "string"
+            -
+              Name: "generated.attempt.type"
+              Type: "string"
+            -
+              Name: "edapp.id"
+              Type: "string"
+            -
+              Name: "group.ext.entity_id"
+              Type: "string"
+            -
+              Name: "actor.ext.root_account_id"
+              Type: "string"
+            -
+              Name: "generated.attempt.assignee.type"
+              Type: "string"
+            -
+              Name: "ext.user_agent"
+              Type: "string"
+            -
+              Name: "object.ext.restricted_access"
+              Type: "string"
+            -
+              Name: "generated.ext.grade"
+              Type: "string"
+            -
+              Name: "generated.attempt.ext.grade"
+              Type: "string"
+            -
+              Name: "id"
+              Type: "string"
+            -
+              Name: "object.count"
+              Type: "string"
+            -
+              Name: "membership.organization.suborganizationof.id"
+              Type: "string"
+            -
+              Name: "actor.ext.user_sis_id"
+              Type: "string"
+            -
+              Name: "object.ext.entity_id"
+              Type: "string"
+            -
+              Name: "object.ext.type"
+              Type: "string"
+            -
+              Name: "ext.request_url"
+              Type: "string"
+            -
+              Name: "object.ext.is_admin"
+              Type: "string"
+            -
+              Name: "generated.attempt.id"
+              Type: "string"
+            -
+              Name: "object.ext.asset_subtype"
+              Type: "string"
+            -
+              Name: "actor.ext.real_user_id"
+              Type: "string"
+            -
+              Name: "generated.type"
+              Type: "string"
+            -
+              Name: "object.ext.http_method"
+              Type: "string"
+            -
+              Name: "ext.client_ip"
+              Type: "string"
+            -
+              Name: "session.type"
+              Type: "string"
+            -
+              Name: "dataversion"
+              Type: "string"
+            -
+              Name: "object.ext.user_name"
+              Type: "string"
+            -
+              Name: "object.ext.state"
+              Type: "string"
+            -
+              Name: "eventtime"
+              Type: "string"
+            -
+              Name: "membership.type"
+              Type: "string"
+            -
+              Name: "object.ext.display_name"
+              Type: "string"
+            -
+              Name: "object.id"
+              Type: "string"
+            -
+              Name: "object.ext.developer_key_id"
+              Type: "string"
+            -
+              Name: "object.ext.access_is_current"
+              Type: "string"
+            -
+              Name: "membership.member.id"
+              Type: "string"
+            -
+              Name: "membership.id"
+              Type: "string"
+            -
+              Name: "ext.version"
+              Type: "string"
+            -
+              Name: "actor.ext.entity_id"
+              Type: "string"
+            -
+              Name: "action"
+              Type: "string"
+            -
+              Name: "actor.ext.root_account_uuid"
+              Type: "string"
+            -
+              Name: "membership.organization.type"
+              Type: "string"
+            -
+              Name: "membership.organization.suborganizationof.type"
+              Type: "string"
+            -
+              Name: "generated.attempt.assignee.ext.sis_id"
+              Type: "string"
+            -
+              Name: "local_course_id"
+              Type: "int"
+            -
+              Name: "local_user_id"
+              Type: "int"
+            -
+              Name: "local_assignment_id"
+              Type: "int"
+          Location: !Sub "s3://${Organization}-${Project}-canvas-events/"
+          InputFormat: "org.apache.hadoop.mapred.TextInputFormat"
+          OutputFormat: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+          Compressed: false
+          NumberOfBuckets: -1
+          SerdeInfo:
+            SerializationLibrary: "org.openx.data.jsonserde.JsonSerDe"
+            Parameters:
+              paths: "@context,action,actor.ext.entity_id,actor.ext.real_user_id,actor.ext.root_account_id,actor.ext.root_account_lti_guid,actor.ext.root_account_uuid,actor.ext.user_login,actor.ext.user_sis_id,actor.id,actor.type,dataversion,edapp.id,edapp.type,eventtime,ext.client_ip,ext.hostname,ext.job_id,ext.job_tag,ext.request_id,ext.request_url,ext.user_agent,ext.version,generated.attempt.assignable.id,generated.attempt.assignable.type,generated.attempt.assignee.ext.sis_id,generated.attempt.assignee.id,generated.attempt.assignee.type,generated.attempt.ext.grade,generated.attempt.id,generated.attempt.type,generated.ext.entity_id,generated.ext.grade,generated.id,generated.scoregiven,generated.scoregiven.numberstr,generated.type,group.ext.context_type,group.ext.entity_id,group.id,group.type,id,local_assignment_id,local_course_id,local_user_id,membership.id,membership.member.id,membership.member.type,membership.organization.id,membership.organization.suborganizationof.id,membership.organization.suborganizationof.type,membership.organization.type,membership.roles,membership.type,object.assignable.id,object.assignable.type,object.assignee.ext.sis_id,object.assignee.id,object.assignee.type,object.count,object.datecreated,object.datemodified,object.description,object.ext.access_is_current,object.ext.asset_name,object.ext.asset_subtype,object.ext.asset_type,object.ext.context_account_id,object.ext.course_id,object.ext.course_section_id,object.ext.developer_key_id,object.ext.display_name,object.ext.domain,object.ext.entity_id,object.ext.filename,object.ext.grade,object.ext.http_method,object.ext.is_admin,object.ext.limit_privileges_to_course_section,object.ext.redirect_url,object.ext.restricted_access,object.ext.state,object.ext.state_is_current,object.ext.submission_type,object.ext.type,object.ext.url,object.ext.user_id,object.ext.user_name,object.ext.workflow_state,object.id,object.maxscore.numberstr,object.name,object.type,referrer,sendtime,sensor,session.id,session.type,type"
+          Parameters:
+            CrawlerSchemaDeserializerVersion: "1.0"
+            CrawlerSchemaSerializerVersion: "1.0"
+            UPDATED_BY_CRAWLER: !Sub "${Organization}-${Project}-canvas-events"
+            averageRecordSize: "3493"
+            classification: "json"
+            compressionType: "none"
+            objectCount: "2"
+            recordCount: "2"
+            sizeKey: "6987"
+            typeOfData: "file"
+          StoredAsSubDirectories: false
+        PartitionKeys:
+          -
+            Name: "partition_0"
+            Type: "string"
+          -
+            Name: "partition_1"
+            Type: "string"
+          -
+            Name: "partition_2"
+            Type: "string"
+          -
+            Name: "partition_3"
+            Type: "string"
+        Retention: 0
+        Name: !Sub "${Organization}_${Project}_canvas_events"
+
+
+  IAMRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      Path: "/service-role/"
+      RoleName: !Sub "AWSGlueServiceRole-${Organization}-${Project}-canvas-s3"
+      AssumeRolePolicyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"glue.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
+      MaxSessionDuration: 3600
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+        - !Ref IAMManagedPolicy
+
+  IAMManagedPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "AWSGlueServiceRole-${Organization}-${Project}-canvas-s3"
+      Path: "/service-role/"
+      PolicyDocument: !Sub |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:GetObject",
+                        "s3:PutObject"
+                    ],
+                    "Resource": [
+                        "arn:aws:s3:::${Organization}-${Project}-*"
+                    ]
+                }
+            ]
+        }
+
+  GlueCrawler:
+    Type: "AWS::Glue::Crawler"
+    Properties:
+      Name: !Sub "${Organization}-${Project}-canvas-events"
+      Role: !Sub "service-role/${IAMRole}"
+      Targets:
+        S3Targets:
+          -
+            Path: !Sub "s3://${Organization}-${Project}-canvas-events"
+      #            ConnectionName: !Sub "${Organization}-${Project}-canvas-s3-connection"
+      DatabaseName: !Sub "${Organization}-${Project}-canvas-database"
+      SchemaChangePolicy:
+        UpdateBehavior: "LOG"
+        DeleteBehavior: "LOG"

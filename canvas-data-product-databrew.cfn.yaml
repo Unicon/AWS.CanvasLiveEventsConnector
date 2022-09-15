@@ -1,0 +1,332 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Metadata:
+  Generator: "former2"
+Description: ""
+Parameters:
+  Organization:
+    Type: "String"
+    Default: "unicon"
+
+  Project:
+    Type: "String"
+    Default: "devers"
+
+  CanvasUserFlow:
+    Type: "String"
+    Default: "CanvasUserFlow"
+
+  CanvasCourseFlow:
+    Type: "String"
+    Default: "CanvasCourseFlow"
+
+  CanvasAssignmentFlow:
+    Type: "String"
+    Default: "CanvasAssignmentFlow"
+
+
+Resources:
+  S3Bucket3:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub "${Organization}-${Project}-data-products"
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: "project"
+          Value: !Ref Project
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+            BucketKeyEnabled: false
+
+  DataBrewDataset:
+    Type: "AWS::DataBrew::Dataset"
+    Properties:
+      Name: !Sub "${Organization}-${Project}-canvas-events"
+      Input:
+        DataCatalogInputDefinition:
+          CatalogId: !Ref AWS::AccountId
+          DatabaseName: !Sub "${Organization}-${Project}-canvas-database"
+          TableName: !Sub "${Organization}_${Project}_canvas_events"
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+
+  DataBrewDataset2:
+    Type: "AWS::DataBrew::Dataset"
+    Properties:
+      Name: !Sub "${Organization}-${Project}-canvas-users-latest"
+      Input:
+        S3InputDefinition:
+          Bucket: !Sub "${Organization}-${Project}-canvas-users"
+          Key: !Sub "${CanvasUserFlow}/"
+      FormatOptions:
+        Json:
+          MultiLine: false
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+
+  DataBrewDataset3:
+    Type: "AWS::DataBrew::Dataset"
+    Properties:
+      Name: !Sub "${Organization}-${Project}-canvas-courses-latest"
+      Input:
+        S3InputDefinition:
+          Bucket: !Sub "${Organization}-${Project}-canvas-courses"
+          Key: !Sub "${CanvasCourseFlow}/"
+      FormatOptions:
+        Json:
+          MultiLine: false
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+
+  DataBrewDataset4:
+    Type: "AWS::DataBrew::Dataset"
+    Properties:
+      Name: !Sub "${Organization}-${Project}-canvas-assignments-latest"
+      Input:
+        S3InputDefinition:
+          Bucket: !Sub "${Organization}-${Project}-canvas-assignments"
+          Key: !Sub "${CanvasAssignmentFlow}/"
+      FormatOptions:
+        Json:
+          MultiLine: false
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+
+  DataBrewRecipe:
+    Type: "AWS::DataBrew::Recipe"
+    Properties:
+      Name: !Sub "${DataBrewDataset}-dataproduct-recipe"
+#      ProjectName: !Ref DataBrewProject
+#      Version: "1.0"
+      Steps:
+        -
+          Action:
+            Operation: "DELETE_DUPLICATE_ROWS"
+            Parameters:
+              duplicateRowsCount: "0"
+        -
+          Action:
+            Operation: "REMOVE_VALUES"
+            Parameters:
+              sourceColumn: "actor.type"
+          ConditionExpressions:
+            -
+              Condition: "IS_NOT"
+              Value: "[\"Person\"]"
+              TargetColumn: "actor.type"
+        -
+          Action:
+            Operation: "DELETE"
+            Parameters:
+              sourceColumns: "[\"@context\",\"actor.ext.entity_id\",\"actor.ext.real_user_id\",\"actor.ext.root_account_id\",\"actor.ext.root_account_lti_guid\",\"actor.ext.root_account_uuid\",\"actor.ext.user_login\",\"actor.ext.user_sis_id\",\"dataversion\",\"ext.hostname\",\"ext.job_id\",\"ext.job_tag\",\"ext.request_id\",\"ext.request_url\",\"ext.user_agent\",\"ext.version\",\"generated.attempt.assignable.id\",\"generated.attempt.assignable.type\",\"generated.attempt.assignee.ext.sis_id\",\"generated.attempt.assignee.id\",\"generated.attempt.assignee.type\",\"generated.attempt.ext.grade\",\"generated.attempt.id\",\"generated.attempt.type\",\"generated.ext.entity_id\",\"generated.ext.grade\",\"generated.id\",\"generated.scoregiven\",\"generated.scoregiven.numberstr\",\"generated.type\",\"group.ext.context_type\",\"group.ext.entity_id\",\"membership.id\",\"membership.member.id\",\"membership.member.type\",\"membership.organization.id\",\"membership.organization.suborganizationof.id\",\"membership.organization.suborganizationof.type\",\"membership.organization.type\",\"membership.roles\",\"membership.type\",\"object.assignable.id\",\"object.assignable.type\",\"object.assignee.ext.sis_id\",\"object.assignee.id\",\"object.assignee.type\",\"object.count\",\"object.datecreated\",\"object.datemodified\",\"object.description\",\"object.ext.access_is_current\",\"object.ext.asset_name\",\"object.ext.asset_subtype\",\"object.ext.asset_type\",\"object.ext.context_account_id\",\"object.ext.course_id\",\"object.ext.course_section_id\",\"object.ext.developer_key_id\",\"object.ext.display_name\",\"object.ext.domain\",\"object.ext.entity_id\",\"object.ext.filename\",\"object.ext.grade\",\"object.ext.http_method\",\"object.ext.is_admin\",\"object.ext.limit_privileges_to_course_section\",\"object.ext.redirect_url\",\"object.ext.restricted_access\",\"object.ext.state\",\"object.ext.state_is_current\",\"object.ext.submission_type\",\"object.ext.type\",\"object.ext.url\",\"object.ext.user_id\",\"object.ext.user_name\",\"object.ext.workflow_state\",\"object.maxscore.numberstr\"]"
+        -
+          Action:
+            Operation: "JOIN"
+            Parameters:
+              joinKeys: "[{\"key\":\"local_user_id\",\"value\":\"id\"}]"
+              joinType: "LEFT_JOIN"
+              leftColumns: "[\"action\",\"actor.id\",\"actor.type\",\"edapp.id\",\"edapp.type\",\"eventtime\",\"ext.client_ip\",\"group.id\",\"group.type\",\"id\",\"local_assignment_id\",\"local_course_id\",\"local_user_id\",\"object.id\",\"object.name\",\"object.type\",\"referrer\",\"sendtime\",\"sensor\",\"session.id\",\"session.type\",\"type\"]"
+              rightColumns: "[\"id\",\"login_id\",\"name\"]"
+              secondInputLocation: !Sub "s3://${Organization}-${Project}-canvas-users-latest/"
+              secondaryDatasetName: !Sub "${Organization}-${Project}-canvas-users-latest"
+        -
+          Action:
+            Operation: "RENAME"
+            Parameters:
+              sourceColumn: "TABLE_B_id"
+              targetColumn: "user_id"
+        -
+          Action:
+            Operation: "RENAME"
+            Parameters:
+              sourceColumn: "login_id"
+              targetColumn: "user_login_id"
+        -
+          Action:
+            Operation: "RENAME"
+            Parameters:
+              sourceColumn: "name"
+              targetColumn: "user_fullname"
+        -
+          Action:
+            Operation: "JOIN"
+            Parameters:
+              joinKeys: "[{\"key\":\"local_course_id\",\"value\":[\"id\"]}]"
+              joinType: "LEFT_JOIN"
+              leftColumns: "[\"action\",\"actor.id\",\"actor.type\",\"edapp.id\",\"edapp.type\",\"eventtime\",\"ext.client_ip\",\"group.id\",\"group.type\",\"id\",\"local_assignment_id\",\"local_course_id\",\"local_user_id\",\"object.id\",\"object.name\",\"object.type\",\"referrer\",\"sendtime\",\"sensor\",\"session.id\",\"session.type\",\"type\",\"user_id\",\"user_login_id\",\"user_fullname\"]"
+              rightColumns: "[\"course_code\",\"id\",\"name\"]"
+              secondInputLocation: !Sub "s3://${Organization}-${Project}-canvas-courses-latest/"
+              secondaryDatasetName: !Sub "${Organization}-${Project}-canvas-courses-latest"
+        -
+          Action:
+            Operation: "RENAME"
+            Parameters:
+              sourceColumn: "TABLE_B_id"
+              targetColumn: "course_id"
+        -
+          Action:
+            Operation: "RENAME"
+            Parameters:
+              sourceColumn: "name"
+              targetColumn: "course_name"
+        -
+          Action:
+            Operation: "JOIN"
+            Parameters:
+              joinKeys: "[{\"key\":\"local_assignment_id\",\"value\":[\"id\"]}]"
+              joinType: "LEFT_JOIN"
+              leftColumns: "[\"action\",\"actor.id\",\"actor.type\",\"edapp.id\",\"edapp.type\",\"eventtime\",\"ext.client_ip\",\"group.id\",\"group.type\",\"id\",\"local_assignment_id\",\"local_course_id\",\"local_user_id\",\"object.id\",\"object.name\",\"object.type\",\"referrer\",\"sendtime\",\"sensor\",\"session.id\",\"session.type\",\"type\",\"user_id\",\"user_login_id\",\"user_fullname\",\"course_code\",\"course_id\",\"course_name\"]"
+              rightColumns: "[\"description\",\"id\",\"name\"]"
+              secondInputLocation: !Sub "s3://${Organization}-${Project}-canvas-assignments-latest/"
+              secondaryDatasetName: !Sub "${Organization}-${Project}-canvas-assignments-latest"
+        -
+          Action:
+            Operation: "RENAME"
+            Parameters:
+              sourceColumn: "TABLE_B_id"
+              targetColumn: "assignment_id"
+        -
+          Action:
+            Operation: "RENAME"
+            Parameters:
+              sourceColumn: "name"
+              targetColumn: "assignment_name"
+        -
+          Action:
+            Operation: "RENAME"
+            Parameters:
+              sourceColumn: "description"
+              targetColumn: "assignment_desc"
+
+  DataBrewProject:
+    Type: "AWS::DataBrew::Project"
+    Properties:
+      Name: !Sub "${DataBrewDataset}-dataproduct"
+      DatasetName: !Ref DataBrewDataset
+      RecipeName: !Ref DataBrewRecipe
+      RoleArn: !GetAtt IAMRole.Arn
+      Sample:
+        Size: 500
+        Type: "FIRST_N"
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+
+  DataBrewJob:
+    Type: "AWS::DataBrew::Job"
+    Properties:
+      Name: !Sub "${Organization}-${Project}-canvas-data-product-job"
+      ProjectName: !Ref DataBrewProject
+      Type: "RECIPE"
+      LogSubscription: "DISABLE"
+      MaxCapacity: 5
+      MaxRetries: 0
+      Timeout: 2880
+      RoleArn: !GetAtt IAMRole.Arn
+      Outputs:
+        -
+          Format: "JSON"
+          Location:
+            Bucket: !Sub "${Organization}-${Project}-data-products"
+          Overwrite: true
+
+  IAMRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      Path: "/service-role/"
+      RoleName: !Sub "AWSGlueDataBrewServiceRole-${DataBrewDataset}"
+      AssumeRolePolicyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"databrew.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
+      MaxSessionDuration: 3600
+      ManagedPolicyArns:
+        - !Ref IAMManagedPolicy
+        - !Ref IAMManagedPolicy2
+        - "arn:aws:iam::aws:policy/service-role/AWSGlueDataBrewServiceRole"
+
+  IAMManagedPolicy:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "AwsGlueDataBrewServicePolicyForInputS3-${DataBrewDataset}"
+      Path: "/service-role/"
+      PolicyDocument: !Sub |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Action": [
+                        "s3:ListBucket",
+                        "s3:GetObject"
+                    ],
+                    "Resource": [
+                        "arn:aws:s3:::${Organization}-${Project}-canvas-courses/*",
+                        "arn:aws:s3:::${DataBrewDataset3}/*",
+                        "arn:aws:s3:::${Organization}-${Project}-canvas-users/*",
+                        "arn:aws:s3:::${DataBrewDataset2}/*",
+                        "arn:aws:s3:::${Organization}-${Project}-canvas-assignments/*",
+                        "arn:aws:s3:::${DataBrewDataset4}/*",
+                        "arn:aws:s3:::${DataBrewDataset}/*",
+                        "arn:aws:s3:::${Organization}-${Project}-canvas-courses",
+                        "arn:aws:s3:::${DataBrewDataset3}",
+                        "arn:aws:s3:::${Organization}-${Project}-canvas-users",
+                        "arn:aws:s3:::${DataBrewDataset2}",
+                        "arn:aws:s3:::${Organization}-${Project}-canvas-assignments",
+                        "arn:aws:s3:::${DataBrewDataset4}",
+                        "arn:aws:s3:::${DataBrewDataset}"
+                    ],
+                    "Effect": "Allow"
+                }
+            ]
+        }
+
+  IAMManagedPolicy2:
+    Type: "AWS::IAM::ManagedPolicy"
+    Properties:
+      ManagedPolicyName: !Sub "AwsGlueDataBrewServicePolicyForOutputS3-${DataBrewDataset}"
+      Path: "/service-role/"
+      PolicyDocument: !Sub |
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Action": [
+                        "s3:GetObject",
+                        "s3:PutObject",
+                        "s3:ListBucket",
+                        "s3:DeleteObject"
+                    ],
+                    "Resource": [
+                        "arn:aws:s3:::${Organization}-${Project}-data-products/*",
+                        "arn:aws:s3:::${Organization}-${Project}-data-products"
+                    ],
+                    "Effect": "Allow"
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:PutObjectAcl"
+                    ],
+                    "Resource": [
+                        "arn:aws:s3:::${Organization}-${Project}-data-products/*"
+                    ],
+                    "Condition": {
+                        "StringEquals": {
+                            "s3:x-amz-acl": "bucket-owner-full-control"
+                        }
+                    }
+                }
+            ]
+        }

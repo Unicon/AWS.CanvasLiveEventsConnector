@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Metadata:
+  Generator: "former2"
+Description: ""
+Parameters:
+  Project:
+    Type: "String"
+    Default: "devers"
+
+  Organization:
+    Type: "String"
+    Default: "unicon"
+
+Resources:
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Sub "${Organization}-${Project}-canvas-events"
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          -
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+            BucketKeyEnabled: false
+
+  SQSQueuePolicy:
+    Type: "AWS::SQS::QueuePolicy"
+    Properties:
+      PolicyDocument: !Sub |
+        {
+          "Version":"2008-10-17",
+          "Id":"__default_policy_ID",
+          "Statement":[
+            {
+              "Sid":"__owner_statement",
+              "Effect":"Allow",
+              "Principal":{
+                "AWS":"arn:aws:iam::${AWS::AccountId}:root"
+              },
+                "Action":"SQS:*",
+                "Resource":"${SQSQueue.Arn}"
+              },
+              {
+                "Sid":"__sender_statement",
+                "Effect":"Allow",
+                "Principal":{
+                  "AWS":"arn:aws:iam::636161780776:root"
+                },
+                  "Action":"SQS:SendMessage",
+                  "Resource":"${SQSQueue.Arn}"
+                }
+              ]
+            }
+      Queues:
+        - !Sub "https://sqs.${AWS::Region}.amazonaws.com/${AWS::AccountId}/${SQSQueue.QueueName}"
+
+  SQSQueue:
+    Type: "AWS::SQS::Queue"
+    Properties:
+      DelaySeconds: "0"
+      MaximumMessageSize: "262144"
+      MessageRetentionPeriod: "345600"
+      ReceiveMessageWaitTimeSeconds: "0"
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+      VisibilityTimeout: "30"
+      QueueName: !Sub "canvas-live-events-${Project}-${Organization}"
+
+  IAMRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      Path: "/"
+      RoleName: "CanvasLiveEventsLambdaRole"
+      AssumeRolePolicyDocument: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}"
+      MaxSessionDuration: 3600
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
+      Description: "Allows Lambda functions to call AWS services on your behalf."
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+
+  LambdaFunction:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Description: ""
+      Environment:
+        Variables:
+          DEST_BUCKET: !Sub "${Organization}-${Project}-canvas-events"
+      FunctionName: "CanvasLiveEventLambda"
+      Handler: "net.unicon.CanvasLiveEventsLambda::handleRequest"
+      Architectures:
+        - "x86_64"
+      Code:
+        S3Bucket: "canvas-integration-lambdas"
+        S3Key: "CanvasLiveEventsLambda-0.0.1-SNAPSHOT.jar"
+      MemorySize: 512
+      Role: !GetAtt IAMRole.Arn
+      Runtime: "java8"
+      Tags:
+        -
+          Key: "project"
+          Value: !Ref Project
+      Timeout: 15
+      TracingConfig:
+        Mode: "PassThrough"
+
+  LambdaEventSourceMapping:
+    Type: "AWS::Lambda::EventSourceMapping"
+    Properties:
+      BatchSize: 2
+      EventSourceArn: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:canvas-live-events-${Project}-${Organization}"
+      FunctionName: !GetAtt LambdaFunction.Arn
+      Enabled: true
+      MaximumBatchingWindowInSeconds: 0
