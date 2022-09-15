@@ -5,11 +5,11 @@ Description: ""
 Parameters:
   Organization:
     Type: "String"
-    Default: "unicon"
+    Default: "CHANGEME"
 
   Project:
     Type: "String"
-    Default: "devers"
+    Default: "CHANGEME"
 
 Resources:
   LambdaFunction:
@@ -22,10 +22,10 @@ Resources:
         - "x86_64"
       Code:
         S3Bucket: "canvas-integration-lambdas"
-        S3Key: "CanvasAppFlowLambda-0.0.1-SNAPSHOT.jar"
+        S3Key: "1.0.0/CanvasAppFlowLambda-1.0.0.jar"
       MemorySize: 512
       Role: !GetAtt IAMRole.Arn
-      Runtime: "java8"
+      Runtime: "java11"
       Tags:
         -
           Key: "project"
@@ -198,4 +198,3 @@ Resources:
         -
           Key: "project"
           Value: !Ref Project
-

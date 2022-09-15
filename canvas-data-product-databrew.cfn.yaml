@@ -5,11 +5,11 @@ Description: ""
 Parameters:
   Organization:
     Type: "String"
-    Default: "unicon"
+    Default: "CHANGEME"
 
   Project:
     Type: "String"
-    Default: "devers"
+    Default: "CHANGEME"
 
   CanvasUserFlow:
     Type: "String"
