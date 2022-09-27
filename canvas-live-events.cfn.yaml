@@ -5,11 +5,11 @@ Description: ""
 Parameters:
   Project:
     Type: "String"
-    Default: "devers"
+    Default: "CHANGEME"
 
   Organization:
     Type: "String"
-    Default: "unicon"
+    Default: "CHANGEME"
 
 Resources:
   S3Bucket:
@@ -107,10 +107,10 @@ Resources:
         - "x86_64"
       Code:
         S3Bucket: "canvas-integration-lambdas"
-        S3Key: "CanvasLiveEventsLambda-0.0.1-SNAPSHOT.jar"
+        S3Key: "1.0.0/CanvasLiveEventsLambda-1.0.0.jar"
       MemorySize: 512
       Role: !GetAtt IAMRole.Arn
-      Runtime: "java8"
+      Runtime: "java11"
       Tags:
         -
           Key: "project"
